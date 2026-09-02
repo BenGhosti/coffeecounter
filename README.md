@@ -4,13 +4,18 @@ Self-hosted, multi-user webapp for tracking drink/consumption stats via
 personal webhook links. Single Docker container, SQLite storage, Chart.js
 dashboards. Built for Unraid.
 
-![CoffeeCounter dashboard](CoffeeCounterShowcase.png)
+<p align="center">
+    <img src="CoffeeCounterShowcase.png" alt="CoffeeCounter dashboard – light theme" width="46%">
+    <img src="CoffeeCounterShowcaseDark.png" alt="CoffeeCounter dashboard – dark theme" width="46%">
+</p>
+<p align="center"><em>Dashboard in light and dark theme</em></p>
 
 ## Stack
 
 - **Backend**: FastAPI (Python) + SQLite (stdlib `sqlite3`, no ORM)
-- **Frontend**: static HTML/CSS/JS, Chart.js via CDN — served by the same
-  container as the API (no separate frontend container/reverse proxy needed)
+- **Frontend**: static HTML/CSS/JS, Chart.js vendored locally — served by
+  the same container as the API (no separate frontend container/reverse
+  proxy, no CDN needed)
 - **Auth**: PIN-only login (no username field — the PIN itself identifies
   the user) and/or Passkey/WebAuthn with discoverable credentials, so
   passkey sign-in also needs no username. Set via `COFFEECOUNTER_AUTH_MODE`.

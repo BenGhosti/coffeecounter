@@ -421,7 +421,18 @@ function renderLineChart(series) {
                 },
             },
             plugins: {
-                legend: { labels: { color: chartTextColor(), usePointStyle: true, boxWidth: 8 } },
+                legend: {
+                    position: 'bottom',
+                    align: 'center',
+                    labels: {
+                        color: chartTextColor(),
+                        usePointStyle: true,
+                        pointStyle: 'circle',
+                        boxWidth: 9,
+                        boxHeight: 9,
+                        padding: 14,
+                    },
+                },
                 tooltip: {
                     backgroundColor: chartTooltipBg(),
                     titleColor: chartTextColor(),
