@@ -4,6 +4,8 @@ Self-hosted, multi-user webapp for tracking drink/consumption stats via
 personal webhook links. Single Docker container, SQLite storage, Chart.js
 dashboards. Built for Unraid.
 
+![CoffeeCounter dashboard](CoffeeCounterShowcase.png)
+
 ## Stack
 
 - **Backend**: FastAPI (Python) + SQLite (stdlib `sqlite3`, no ORM)
