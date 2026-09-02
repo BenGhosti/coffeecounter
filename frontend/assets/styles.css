@@ -507,19 +507,78 @@ input, select {
     background: rgba(128, 128, 128, 0.12);
 }
 
+/* ---------- Scope (Everyone / Just me) segmented control ---------- */
+.segmented {
+    display: inline-flex;
+    gap: 2px;
+    padding: 3px;
+    background: var(--textarea-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 999px;
+}
+.segmented button {
+    border: none;
+    background: transparent;
+    color: var(--text-color);
+    border-radius: 999px;
+    padding: 7px 16px;
+    font-size: 0.85rem;
+    opacity: 0.75;
+    transition: background 0.2s ease, color 0.2s ease, opacity 0.2s ease;
+}
+.segmented button:hover:not(:disabled) {
+    opacity: 1;
+    background: rgba(128, 128, 128, 0.15);
+    transform: none;
+}
+.segmented button.active {
+    background: var(--highlight-color);
+    color: var(--on-accent);
+    opacity: 1;
+}
+
 /* ---------- Charts ---------- */
 .chart-wrap {
     position: relative;
     height: 280px;
     margin-bottom: 1rem;
 }
-.chart-row {
-    display: flex;
+
+/* "Over time" runs full width ("double" vs. the squares below). Breakdown
+   and Who's drinking most are equal square cards beside each other on
+   desktop and stack into one column on smaller screens. */
+.square-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
     gap: 1.5rem;
-    flex-wrap: wrap;
+    margin-bottom: 1.5rem;
 }
-.chart-row > .card {
-    flex: 1 1 320px;
+.square-grid > .card {
+    margin-bottom: 0;
+    display: flex;
+    flex-direction: column;
+}
+.square-grid .chart-wrap,
+.square-grid .square-fill {
+    width: 100%;
+    height: auto;
+    aspect-ratio: 1 / 1;
+    margin: 0;
+    min-height: 0;
+}
+.square-grid .square-fill {
+    overflow-y: auto;
+}
+.square-grid .square-fill .empty-message {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    padding: 1rem;
+}
+
+@media (max-width: 760px) {
+    .square-grid { grid-template-columns: 1fr; }
 }
 
 /* ---------- Tables ---------- */

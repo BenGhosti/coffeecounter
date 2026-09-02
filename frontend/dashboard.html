@@ -24,6 +24,7 @@
     <meta property="og:type" content="website">
     <link rel="stylesheet" href="assets/styles.css">
     <script src="assets/vendor/chart.umd.min.js"></script>
+    <script src="assets/webauthn.js"></script>
 </head>
 <body>
     <div class="container wide">
@@ -83,9 +84,9 @@
                 <button data-range="all">All</button>
             </div>
             <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
-                <div class="range-switcher" id="scope-switcher" style="margin:0;">
-                    <button data-scope="global" class="active">Everyone</button>
-                    <button data-scope="user">Just me</button>
+                <div class="segmented" id="scope-switcher">
+                    <button type="button" data-scope="global">Everyone</button>
+                    <button type="button" data-scope="user" class="active">Just me</button>
                 </div>
                 <button class="secondary" id="export-btn">Export CSV</button>
             </div>
@@ -115,27 +116,47 @@
             </div>
         </div>
 
-        <div class="chart-row">
-            <div class="card">
-                <h2>Over time</h2>
-                <div class="chart-wrap"><canvas id="line-chart"></canvas></div>
-            </div>
+        <div class="card">
+            <h2>Over time</h2>
+            <div class="chart-wrap"><canvas id="line-chart"></canvas></div>
+        </div>
+
+        <div class="square-grid">
             <div class="card">
                 <h2>Breakdown</h2>
                 <div class="chart-wrap"><canvas id="pie-chart"></canvas></div>
             </div>
-        </div>
-
-        <!-- Leaderboard (global scope only) -->
-        <div class="card" id="leaderboard-card" style="display:none;">
-            <h2>Who&rsquo;s drinking most</h2>
-            <div id="leaderboard-body"></div>
+            <div class="card" id="leaderboard-card">
+                <h2>Who&rsquo;s drinking most</h2>
+                <div class="square-fill" id="leaderboard-body"></div>
+            </div>
         </div>
 
         <div class="card">
             <h2 style="margin-bottom:1rem;">Your webhook links</h2>
             <div id="webhook-list"></div>
             <div class="status-message" id="webhook-status"></div>
+        </div>
+
+        <!-- Your passkeys (self-service for every user) -->
+        <div class="card">
+            <h2>Your passkeys</h2>
+            <div class="secure-warning" id="secure-warning">
+                <strong>Passkeys aren't available in this browser context.</strong><br>
+                Passkeys/WebAuthn only work over HTTPS or on localhost. PIN login is unaffected.
+            </div>
+            <div class="form-row">
+                <div class="field">
+                    <label for="passkey-name">Key name</label>
+                    <input type="text" id="passkey-name" placeholder="e.g. Office laptop" maxlength="50">
+                </div>
+            </div>
+            <button id="add-passkey-btn">Add passkey</button>
+            <div class="status-message" id="passkey-status"></div>
+            <table style="margin-top:1rem;">
+                <thead><tr><th>Name</th><th>Created</th><th>Last used</th><th></th></tr></thead>
+                <tbody id="passkeys-body"></tbody>
+            </table>
         </div>
 
         <div class="card">
