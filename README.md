@@ -86,14 +86,14 @@ that:
 
 `users` (PIN hash, role) · `passkeys` · `drink_types` (name, color,
 active) · `webhook_tokens` (per user + drink type) · `events` (one row per
-trigger, timestamped) · `webauthn_challenges` (short-lived).
+trigger, timestamped) · `daily_stats` (per user/drink/day counters, kept in
+sync by SQLite triggers on `events`) · `webauthn_challenges` (short-lived).
 
-Aggregation (Day/Week/Month/Year/2 Years/All) is computed on the fly with
-SQLite `strftime()` bucketing — no `daily_stats` pre-aggregation table yet.
-The concept doc flagged this as optional/coder's-discretion; with a single
-`events` index on `(user_id, timestamp)` this stays fast well past normal
-household-scale event volumes, so it was left out for now. Straightforward
-to add later if the table ever gets large (see `app/routers/stats.py`).
+Aggregation for Week/Month/Year/2 Years/All reads the `daily_stats`
+pre-aggregation table instead of rescanning every event, so even large
+histories stay fast. The `Day` view is hourly and reads raw `events`
+directly. On databases created before `daily_stats` existed, the table is
+backfilled once automatically at startup (see `app/routers/stats.py`).
 
 ## What's intentionally not included
 

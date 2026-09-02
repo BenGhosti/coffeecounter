@@ -35,7 +35,7 @@ def _pin_for(digit: str) -> str:
 DEMO_ADMIN_PIN = _pin_for("1")
 DEMO_USER_PINS = {"Mira": _pin_for("2"), "Jonas": _pin_for("3")}
 
-EXTRA_DRINKS = [("Tea", "#3F6B4F")]
+EXTRA_DRINKS = [("Tea", "#C96F4A")]
 
 # Roughly how many trigger events per user per active weekday, per drink —
 # gives a believable "someone actually uses this" shape rather than

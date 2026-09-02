@@ -1,24 +1,61 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="light">
+<html lang="en" data-theme="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>CoffeeCounter — Dashboard</title>
+    <script>
+        (function () {
+            var t = 'dark';
+            try { t = localStorage.getItem('theme') || 'dark'; } catch (e) {}
+            document.documentElement.setAttribute('data-theme', t);
+        })();
+    </script>
+    <title>CoffeeCounter - Dashboard</title>
+    <meta name="description" content="Your drink dashboard: log a drink, browse charts, export CSV.">
+    <meta name="color-scheme" content="light dark">
+    <meta name="theme-color" media="(prefers-color-scheme: light)" content="#F4EFE8">
+    <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#171310">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-title" content="CoffeeCounter">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23D89A52' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M17 8h1a4 4 0 1 1 0 8h-1'/%3E%3Cpath d='M3 8h14v9a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4V8z'/%3E%3Cline x1='6' y1='1' x2='6' y2='4'/%3E%3Cline x1='10' y1='1' x2='10' y2='4'/%3E%3Cline x1='14' y1='1' x2='14' y2='4'/%3E%3C/svg%3E">
+    <meta property="og:title" content="CoffeeCounter - Dashboard">
+    <meta property="og:description" content="Your drink dashboard: log a drink, browse charts, export CSV.">
+    <meta property="og:type" content="website">
     <link rel="stylesheet" href="assets/styles.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.4/chart.umd.min.js"></script>
+    <script src="assets/vendor/chart.umd.min.js"></script>
 </head>
 <body>
     <div class="container wide">
         <div class="topnav">
-            <div class="brand"><span class="cup">&#9749;</span> CoffeeCounter</div>
+            <div class="brand">
+                <svg class="brand-logo" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M17 8h1a4 4 0 1 1 0 8h-1"/>
+                    <path d="M3 8h14v9a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4V8z"/>
+                    <line x1="6" y1="1" x2="6" y2="4"/>
+                    <line x1="10" y1="1" x2="10" y2="4"/>
+                    <line x1="14" y1="1" x2="14" y2="4"/>
+                </svg>
+                CoffeeCounter
+            </div>
             <div class="nav-actions">
                 <span id="who" style="opacity:0.7; font-size:0.85rem; margin-right:8px;"></span>
                 <a href="#" id="admin-link" style="display:none;">Admin</a>
                 <a href="#" id="logout-link">Sign out</a>
                 <button class="theme-toggle" id="theme-toggle" aria-label="Toggle theme" style="position:static;">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20">
-                        <circle cx="12" cy="12" r="5"></circle>
-                        <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"></path>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path class="icon-moon" d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+                        <g class="icon-sun">
+                            <circle cx="12" cy="12" r="5"/>
+                            <line x1="12" y1="1" x2="12" y2="3"/>
+                            <line x1="12" y1="21" x2="12" y2="23"/>
+                            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/>
+                            <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+                            <line x1="1" y1="12" x2="3" y2="12"/>
+                            <line x1="21" y1="12" x2="23" y2="12"/>
+                            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/>
+                            <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+                        </g>
                     </svg>
                 </button>
             </div>
@@ -32,20 +69,50 @@
                 <button class="secondary" id="undo-btn">Undo last</button>
                 <span id="undo-status" style="font-size:0.8rem; opacity:0.7;"></span>
             </div>
+            <div class="undo-confirm" id="undo-confirm" role="dialog" aria-live="polite"></div>
         </div>
 
-        <div class="range-switcher" id="range-switcher">
-            <button data-range="day">Day</button>
-            <button data-range="week">Week</button>
-            <button data-range="month" class="active">Month</button>
-            <button data-range="year">Year</button>
-            <button data-range="2year">2 Years</button>
-            <button data-range="all">All</button>
+        <!-- Charts toolbar: range + scope + export -->
+        <div class="chart-toolbar">
+            <div class="range-switcher" id="range-switcher">
+                <button data-range="day">Day</button>
+                <button data-range="week">Week</button>
+                <button data-range="month" class="active">Month</button>
+                <button data-range="year">Year</button>
+                <button data-range="2year">2 Years</button>
+                <button data-range="all">All</button>
+            </div>
+            <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+                <div class="range-switcher" id="scope-switcher" style="margin:0;">
+                    <button data-scope="global" class="active">Everyone</button>
+                    <button data-scope="user">Just me</button>
+                </div>
+                <button class="secondary" id="export-btn">Export CSV</button>
+            </div>
         </div>
 
-        <div class="range-switcher" id="scope-switcher" style="margin-top:-8px;">
-            <button data-scope="global" class="active">Everyone</button>
-            <button data-scope="user">Just me</button>
+        <!-- Summary chips for the active range/scope -->
+        <div class="summary-grid" id="summary-grid">
+            <div class="stat-chip">
+                <span class="stat-label">Total</span>
+                <span class="stat-value" id="stat-total">-</span>
+                <span class="stat-sub" id="stat-total-sub"></span>
+            </div>
+            <div class="stat-chip">
+                <span class="stat-label">Top drink</span>
+                <span class="stat-value"><span class="stat-dot" id="stat-top-dot" style="display:none;"></span><span id="stat-top">-</span></span>
+                <span class="stat-sub" id="stat-top-sub"></span>
+            </div>
+            <div class="stat-chip">
+                <span class="stat-label">Busiest day</span>
+                <span class="stat-value" id="stat-busiest">-</span>
+                <span class="stat-sub" id="stat-busiest-sub"></span>
+            </div>
+            <div class="stat-chip">
+                <span class="stat-label">Avg per day</span>
+                <span class="stat-value" id="stat-perday">-</span>
+                <span class="stat-sub" id="stat-perday-sub"></span>
+            </div>
         </div>
 
         <div class="chart-row">
@@ -59,11 +126,14 @@
             </div>
         </div>
 
+        <!-- Leaderboard (global scope only) -->
+        <div class="card" id="leaderboard-card" style="display:none;">
+            <h2>Who&rsquo;s drinking most</h2>
+            <div id="leaderboard-body"></div>
+        </div>
+
         <div class="card">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
-                <h2 style="margin:0;">Your webhook links</h2>
-                <button class="secondary" id="export-btn">Export CSV</button>
-            </div>
+            <h2 style="margin-bottom:1rem;">Your webhook links</h2>
             <div id="webhook-list"></div>
             <div class="status-message" id="webhook-status"></div>
         </div>

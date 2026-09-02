@@ -53,6 +53,36 @@ CREATE TABLE IF NOT EXISTS events (
     timestamp TEXT NOT NULL
 );
 
+-- Per-day pre-aggregation so coarse ranges (week/month/year/2y/all) never
+-- rescan the full events table. Kept in sync by triggers on INSERT/DELETE;
+-- "day" is the UTC date of the event (same day the charts already bucket by).
+CREATE TABLE IF NOT EXISTS daily_stats (
+    user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    drink_type_id INTEGER NOT NULL REFERENCES drink_types(id) ON DELETE CASCADE,
+    day TEXT NOT NULL,
+    count INTEGER NOT NULL DEFAULT 0,
+    PRIMARY KEY (user_id, drink_type_id, day)
+);
+
+CREATE TRIGGER IF NOT EXISTS trg_daily_stats_insert
+AFTER INSERT ON events
+BEGIN
+    INSERT INTO daily_stats (user_id, drink_type_id, day, count)
+    VALUES (NEW.user_id, NEW.drink_type_id, date(NEW.timestamp), 1)
+    ON CONFLICT(user_id, drink_type_id, day) DO UPDATE SET count = count + 1;
+END;
+
+CREATE TRIGGER IF NOT EXISTS trg_daily_stats_delete
+AFTER DELETE ON events
+BEGIN
+    UPDATE daily_stats SET count = count - 1
+    WHERE user_id = OLD.user_id AND drink_type_id = OLD.drink_type_id
+      AND day = date(OLD.timestamp);
+    DELETE FROM daily_stats
+    WHERE user_id = OLD.user_id AND drink_type_id = OLD.drink_type_id
+      AND day = date(OLD.timestamp) AND count <= 0;
+END;
+
 CREATE TABLE IF NOT EXISTS webauthn_challenges (
     id TEXT PRIMARY KEY,
     user_id INTEGER,
@@ -71,10 +101,12 @@ CREATE INDEX IF NOT EXISTS idx_events_ts ON events(timestamp);
 CREATE INDEX IF NOT EXISTS idx_tokens_token ON webhook_tokens(token);
 """
 
+# Curated, clearly distinguishable colors that stay legible on the dark
+# coffee theme (and can be overridden per drink by the admin anytime).
 DEFAULT_DRINKS = [
-    ("Coffee", "#6F4E37"),
-    ("Cocoa", "#8B5A2B"),
-    ("Snacks", "#C08552"),
+    ("Coffee", "#D89A52"),
+    ("Cocoa", "#A9744F"),
+    ("Snacks", "#86A361"),
 ]
 
 
@@ -112,6 +144,18 @@ def init_db():
             conn.execute(
                 "INSERT INTO kv_store (key, value) VALUES ('session_secret', ?)",
                 (secrets.token_urlsafe(48),),
+            )
+        # One-time backfill for databases created before daily_stats existed.
+        # The triggers keep it in sync from here on; on a fresh DB this is a
+        # no-op because both tables start empty.
+        ds_count = conn.execute("SELECT COUNT(*) c FROM daily_stats").fetchone()["c"]
+        if ds_count == 0:
+            conn.execute(
+                """
+                INSERT OR IGNORE INTO daily_stats (user_id, drink_type_id, day, count)
+                SELECT user_id, drink_type_id, date(timestamp), COUNT(*)
+                FROM events GROUP BY user_id, drink_type_id, date(timestamp)
+                """
             )
 
 
