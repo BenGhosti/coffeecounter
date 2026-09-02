@@ -1,0 +1,27 @@
+services:
+  coffeecounter:
+    build: .
+    # image: ghcr.io/yourname/coffeecounter:latest   # once you push a built image
+    container_name: coffeecounter
+    restart: unless-stopped
+    ports:
+      - "3800:3000"
+    volumes:
+      - ${APP_DATA_PATH:-/mnt/user/appdata/coffeecounter}:/app/config
+    environment:
+      TZ: ${TZ:-Europe/Berlin}
+      PORT: 3000
+      APP_DATA_PATH: /app/config
+      DB_PATH: /app/config/coffeecounter.sqlite
+      BASE_URL: ${BASE_URL:-http://192.168.1.50:3800/}
+      COFFEECOUNTER_AUTH_MODE: ${COFFEECOUNTER_AUTH_MODE:-both}
+      COFFEECOUNTER_PIN_LENGTH: ${COFFEECOUNTER_PIN_LENGTH:-4}
+      SESSION_TIMEOUT: ${SESSION_TIMEOUT:-28800}
+      COFFEECOUNTER_RP_ID: ${COFFEECOUNTER_RP_ID:-}
+      COFFEECOUNTER_RP_NAME: CoffeeCounter
+      TRUST_PROXY: ${TRUST_PROXY:-true}
+      TRUSTED_PROXY_IPS: ${TRUSTED_PROXY_IPS:-}
+      USE_CF_CONNECTING_IP: ${USE_CF_CONNECTING_IP:-true}
+      ALLOWED_ORIGINS: ${ALLOWED_ORIGINS:-}
+      WEBHOOK_DEBOUNCE: ${WEBHOOK_DEBOUNCE:-0}
+    # No healthcheck by design — kept intentionally lean.

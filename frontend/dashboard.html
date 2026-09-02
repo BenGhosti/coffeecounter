@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>CoffeeCounter — Dashboard</title>
+    <link rel="stylesheet" href="assets/styles.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.4/chart.umd.min.js"></script>
+</head>
+<body>
+    <div class="container wide">
+        <div class="topnav">
+            <div class="brand"><span class="cup">&#9749;</span> CoffeeCounter</div>
+            <div class="nav-actions">
+                <span id="who" style="opacity:0.7; font-size:0.85rem; margin-right:8px;"></span>
+                <a href="#" id="admin-link" style="display:none;">Admin</a>
+                <a href="#" id="logout-link">Sign out</a>
+                <button class="theme-toggle" id="theme-toggle" aria-label="Toggle theme" style="position:static;">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20">
+                        <circle cx="12" cy="12" r="5"></circle>
+                        <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"></path>
+                    </svg>
+                </button>
+            </div>
+        </div>
+
+        <!-- My Stats: trigger + undo -->
+        <div class="card">
+            <h2>Log a drink</h2>
+            <div class="trigger-grid" id="trigger-grid"></div>
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-top:12px;">
+                <button class="secondary" id="undo-btn">Undo last</button>
+                <span id="undo-status" style="font-size:0.8rem; opacity:0.7;"></span>
+            </div>
+        </div>
+
+        <div class="range-switcher" id="range-switcher">
+            <button data-range="day">Day</button>
+            <button data-range="week">Week</button>
+            <button data-range="month" class="active">Month</button>
+            <button data-range="year">Year</button>
+            <button data-range="2year">2 Years</button>
+            <button data-range="all">All</button>
+        </div>
+
+        <div class="range-switcher" id="scope-switcher" style="margin-top:-8px;">
+            <button data-scope="global" class="active">Everyone</button>
+            <button data-scope="user">Just me</button>
+        </div>
+
+        <div class="chart-row">
+            <div class="card">
+                <h2>Over time</h2>
+                <div class="chart-wrap"><canvas id="line-chart"></canvas></div>
+            </div>
+            <div class="card">
+                <h2>Breakdown</h2>
+                <div class="chart-wrap"><canvas id="pie-chart"></canvas></div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
+                <h2 style="margin:0;">Your webhook links</h2>
+                <button class="secondary" id="export-btn">Export CSV</button>
+            </div>
+            <div id="webhook-list"></div>
+            <div class="status-message" id="webhook-status"></div>
+        </div>
+
+        <div class="card">
+            <h2>Recent activity</h2>
+            <table>
+                <thead><tr><th>When</th><th>Drink</th><th>Source</th></tr></thead>
+                <tbody id="recent-body"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="site-footer">CoffeeCounter · self-hosted</div>
+
+    <script src="assets/app.js"></script>
+    <script src="assets/dashboard.js"></script>
+</body>
+</html>

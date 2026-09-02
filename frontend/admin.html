@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>CoffeeCounter — Admin</title>
+    <link rel="stylesheet" href="assets/styles.css">
+    <script src="assets/webauthn.js"></script>
+</head>
+<body>
+    <div class="container wide">
+        <div class="topnav">
+            <div class="brand"><span class="cup">&#9749;</span> CoffeeCounter Admin</div>
+            <div class="nav-actions">
+                <a href="/dashboard.html">&larr; Dashboard</a>
+                <a href="#" id="logout-link">Sign out</a>
+                <button class="theme-toggle" id="theme-toggle" aria-label="Toggle theme" style="position:static;">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20">
+                        <circle cx="12" cy="12" r="5"></circle>
+                        <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"></path>
+                    </svg>
+                </button>
+            </div>
+        </div>
+
+        <!-- Users -->
+        <div class="card">
+            <h2>Users</h2>
+            <div class="form-row">
+                <div class="field">
+                    <label for="new-user-name">Name</label>
+                    <input type="text" id="new-user-name" placeholder="e.g. Mira" maxlength="50">
+                </div>
+                <div class="field">
+                    <label for="new-user-pin" id="new-user-pin-label">PIN</label>
+                    <input type="password" inputmode="numeric" id="new-user-pin" placeholder="••••" maxlength="10">
+                </div>
+                <div class="field">
+                    <label for="new-user-role">Role</label>
+                    <select id="new-user-role">
+                        <option value="user">User</option>
+                        <option value="admin">Admin</option>
+                    </select>
+                </div>
+            </div>
+            <button id="add-user-btn">Add user</button>
+            <div class="status-message" id="user-status"></div>
+            <table style="margin-top:1rem;">
+                <thead><tr><th>Name</th><th>Role</th><th>Passkeys</th><th>Created</th><th></th></tr></thead>
+                <tbody id="users-body"></tbody>
+            </table>
+        </div>
+
+        <!-- Drink types -->
+        <div class="card">
+            <h2>Drink types</h2>
+            <div class="form-row">
+                <div class="field">
+                    <label for="new-drink-name">Name</label>
+                    <input type="text" id="new-drink-name" placeholder="e.g. Tea" maxlength="40">
+                </div>
+                <div class="field">
+                    <label for="new-drink-color">Chart color</label>
+                    <input type="color" id="new-drink-color" value="#8B5A2B" style="height:44px; padding:4px;">
+                </div>
+            </div>
+            <button id="add-drink-btn">Add drink type</button>
+            <div class="status-message" id="drink-status"></div>
+            <table style="margin-top:1rem;">
+                <thead><tr><th>Color</th><th>Name</th><th>Status</th><th></th></tr></thead>
+                <tbody id="drinks-body"></tbody>
+            </table>
+        </div>
+
+        <!-- Your passkeys -->
+        <div class="card">
+            <h2>Your passkeys</h2>
+            <div class="secure-warning" id="secure-warning">
+                <strong>Passkeys aren't available in this browser context.</strong><br>
+                Passkeys/WebAuthn only work over HTTPS or on localhost. PIN login is unaffected.
+            </div>
+            <div class="form-row">
+                <div class="field">
+                    <label for="passkey-name">Key name</label>
+                    <input type="text" id="passkey-name" placeholder="e.g. Office laptop" maxlength="50">
+                </div>
+            </div>
+            <button id="add-passkey-btn">Add passkey</button>
+            <div class="status-message" id="passkey-status"></div>
+            <table style="margin-top:1rem;">
+                <thead><tr><th>Name</th><th>Created</th><th>Last used</th><th></th></tr></thead>
+                <tbody id="passkeys-body"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="site-footer">CoffeeCounter · self-hosted</div>
+
+    <script src="assets/app.js"></script>
+    <script src="assets/admin.js"></script>
+</body>
+</html>

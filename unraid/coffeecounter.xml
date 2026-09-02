@@ -1,0 +1,35 @@
+<?xml version="1.0"?>
+<Container version="2">
+  <Name>CoffeeCounter</Name>
+  <Repository>coffeecounter:latest</Repository>
+  <Registry/>
+  <Network>bridge</Network>
+  <MyIP/>
+  <Shell>sh</Shell>
+  <Privileged>false</Privileged>
+  <Support/>
+  <Project>https://github.com/yourname/coffeecounter</Project>
+  <Overview>Self-hosted multi-user drink/consumption counter with personal webhook links, PIN + Passkey login, and Chart.js dashboards. Single container, SQLite storage.</Overview>
+  <Category>Tools:</Category>
+  <WebUI>http://[IP]:[PORT:3000]/</WebUI>
+  <Icon>https://raw.githubusercontent.com/yourname/coffeecounter/main/frontend/assets/icon.png</Icon>
+  <ExtraParams/>
+  <PostArgs/>
+  <CPUset/>
+  <DateInstalled/>
+  <DonateText/>
+  <DonateLink/>
+  <Requires/>
+
+  <Config Name="WebUI Port" Target="3000" Default="3800" Mode="tcp" Description="Port to access the CoffeeCounter web UI" Type="Port" Display="always" Required="true" Mask="false">3800</Config>
+  <Config Name="AppData" Target="/app/config" Default="/mnt/user/appdata/coffeecounter" Mode="rw" Description="SQLite DB and app config" Type="Path" Display="always" Required="true" Mask="false">/mnt/user/appdata/coffeecounter</Config>
+
+  <Config Name="TZ" Target="TZ" Default="Europe/Berlin" Mode="" Description="Timezone for chart aggregation" Type="Variable" Display="always" Required="true" Mask="false">Europe/Berlin</Config>
+  <Config Name="BASE_URL" Target="BASE_URL" Default="http://192.168.1.50:3800/" Mode="" Description="URL you use to reach CoffeeCounter (needed for correct Passkey/WebAuthn origin checks)" Type="Variable" Display="always" Required="true" Mask="false">http://192.168.1.50:3800/</Config>
+  <Config Name="AUTH_MODE" Target="COFFEECOUNTER_AUTH_MODE" Default="both" Mode="" Description="pin, passkey, or both" Type="Variable" Display="always" Required="false" Mask="false">both</Config>
+  <Config Name="SESSION_TIMEOUT" Target="SESSION_TIMEOUT" Default="28800" Mode="" Description="Session length in seconds, or 'instant'" Type="Variable" Display="advanced" Required="false" Mask="false">28800</Config>
+  <Config Name="TRUST_PROXY" Target="TRUST_PROXY" Default="true" Mode="" Description="Trust X-Forwarded-For / CF-Connecting-IP from your reverse proxy" Type="Variable" Display="advanced" Required="false" Mask="false">true</Config>
+  <Config Name="TRUSTED_PROXY_IPS" Target="TRUSTED_PROXY_IPS" Default="" Mode="" Description="Comma-separated reverse-proxy container IP(s), e.g. your Cloudflare-facing proxy" Type="Variable" Display="advanced" Required="false" Mask="false"/>
+  <Config Name="USE_CF_CONNECTING_IP" Target="USE_CF_CONNECTING_IP" Default="true" Mode="" Description="Prefer Cloudflare's CF-Connecting-IP header for real client IP" Type="Variable" Display="advanced" Required="false" Mask="false">true</Config>
+  <Config Name="WEBHOOK_DEBOUNCE" Target="WEBHOOK_DEBOUNCE" Default="0" Mode="" Description="Seconds to ignore repeat webhook triggers, 0 = off" Type="Variable" Display="advanced" Required="false" Mask="false">0</Config>
+</Container>

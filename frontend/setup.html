@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>CoffeeCounter — Setup</title>
+    <link rel="stylesheet" href="assets/styles.css">
+    <script src="assets/webauthn.js"></script>
+</head>
+<body>
+    <div class="container">
+        <button class="theme-toggle" id="theme-toggle" aria-label="Toggle theme">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="5"></circle>
+                <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"></path>
+            </svg>
+        </button>
+
+        <h1>&#9749; Welcome to CoffeeCounter</h1>
+        <div class="card">
+            <h2>Create the first account</h2>
+            <p style="opacity:0.75; font-size:0.9rem; margin-bottom:1rem;">
+                This is a one-time step. The first account becomes the admin and can
+                add every other user afterwards from the admin panel — no self-signup.
+            </p>
+            <div class="form-row">
+                <div class="field">
+                    <label for="setup-name">Your name</label>
+                    <input type="text" id="setup-name" placeholder="e.g. Ben" maxlength="50">
+                </div>
+                <div class="field">
+                    <label for="setup-pin" id="setup-pin-label">Choose a PIN</label>
+                    <input type="password" inputmode="numeric" id="setup-pin" placeholder="••••" maxlength="10">
+                </div>
+            </div>
+            <button id="setup-btn" type="button">Create admin account</button>
+            <div class="error-message" id="error-message"></div>
+        </div>
+    </div>
+
+    <div class="site-footer">CoffeeCounter · self-hosted</div>
+
+    <script src="assets/app.js"></script>
+    <script>
+        initThemeToggle();
+
+        let pinLength = 4;
+        (async () => {
+            const status = await (await fetch('/api/auth/status')).json();
+            if (!status.setupRequired) { window.location.href = '/index.html'; return; }
+            pinLength = status.pinLength || 4;
+            document.getElementById('setup-pin-label').textContent = `Choose a PIN (${pinLength} digits)`;
+            document.getElementById('setup-pin').maxLength = pinLength;
+            document.getElementById('setup-pin').placeholder = '•'.repeat(pinLength);
+        })();
+
+        document.getElementById('setup-btn').addEventListener('click', async () => {
+            const name = document.getElementById('setup-name').value.trim();
+            const pin = document.getElementById('setup-pin').value.trim();
+            const errEl = document.getElementById('error-message');
+            errEl.textContent = '';
+            if (!name) { errEl.textContent = 'Please enter your name'; return; }
+            if (pin.length !== pinLength || !/^\d+$/.test(pin)) {
+                errEl.textContent = `PIN must be exactly ${pinLength} digits`;
+                return;
+            }
+            try {
+                await api('/api/auth/setup', { method: 'POST', body: JSON.stringify({ name, pin }) });
+                window.location.href = '/dashboard.html';
+            } catch (e) {
+                errEl.textContent = e.message || 'Setup failed';
+            }
+        });
+    </script>
+</body>
+</html>
