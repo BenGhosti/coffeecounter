@@ -15,19 +15,25 @@ dashboards. Built for Unraid.
 
 ## Demo mode (try it without setting anything up)
 
-On Windows, double-click `demo.bat` (or run it from a terminal). It builds
-an isolated demo container — separate name, port (`3900`), and data folder
-from any real deployment, so it can't collide with a production instance —
-and seeds it with 3 demo users and ~2.5 years of spread-out events so every
-range switch (Day/Week/Month/Year/2 Years/All) actually has something to
-show.
+On Windows, double-click `demo.bat` (or run it from a terminal). It runs
+CoffeeCounter directly as a local Python server — no Docker needed — on an
+isolated port (`3900`) with its own data folder (`.\demo-data`), separate
+from any real deployment, so it can't collide with a production instance.
+The Python venv is created under `%LOCALAPPDATA%\CoffeeCounter` (deliberately
+*not* in the repo folder, so pip/Python stay fast even when the project
+lives on a slow network share). It seeds 3 demo users and ~2.5 years of
+spread-out events so every range switch (Day/Week/Month/Year/2 Years/All)
+actually has something to show.
 
 ```
-demo.bat            build/start and seed (safe to re-run — won't reseed
-                     over existing data)
-demo.bat reset       wipe the demo container + data, start completely fresh
-demo.bat stop        stop and remove the demo container
+demo.bat            start + seed (safe to re-run — won't reseed over
+                     existing data)
+demo.bat reset       wipe .\demo-data, start completely fresh
+demo.bat <port>      run on another port (default 3900)
 ```
+
+Requirements: Python 3.10+ on PATH (the script falls back to `py -3`).
+Stop with `Ctrl+C` — the data stays on disk for the next run.
 
 Demo logins (also printed by the script):
 
@@ -37,10 +43,11 @@ Demo logins (also printed by the script):
 | User  | Mira       | 2222 |
 | User  | Jonas      | 3333 |
 
-On Linux/macOS/Unraid, the same seeding works directly — either run
-`python scripts/seed_demo.py` locally against a dev DB, or once the real
-container is up: `docker exec coffeecounter python scripts/seed_demo.py`.
-Add `--force` to wipe and reseed an already-populated database.
+On Linux/macOS/Unraid, the same seeding works directly against any
+CoffeeCounter database: run `python scripts/seed_demo.py` locally against a
+dev DB, or once the real container is up:
+`docker exec coffeecounter python scripts/seed_demo.py`. Add `--force` to
+wipe and reseed an already-populated database.
 
 ## Quick start (real deployment)
 

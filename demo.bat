@@ -1,119 +1,84 @@
 @echo off
-setlocal enabledelayedexpansion
+setlocal
 
-REM ============================================================
-REM  CoffeeCounter demo launcher
-REM  Builds an isolated demo container (separate name/port/data
-REM  from any real deployment), seeds it with demo users and
-REM  ~2.5 years of test events, and opens it in your browser.
-REM
-REM  Usage:
-REM    demo.bat            start (build on first run) and seed if empty
-REM    demo.bat reset       wipe the demo container + data, start fresh
-REM    demo.bat stop        stop and remove the demo container
-REM ============================================================
+rem pushd also maps UNC paths (network shares like \\NAS\...) to a drive letter -
+rem "cd /d" would fail there.
+pushd "%~dp0"
 
-set CONTAINER_NAME=coffeecounter-demo
-set IMAGE_NAME=coffeecounter:demo
-set HOST_PORT=3900
-set APPDATA_DIR=%~dp0demo-data
+rem venv intentionally LOCAL: pip/Python on a network share is extremely slow.
+set "VENV_DIR=%LOCALAPPDATA%\CoffeeCounter\venv"
+set "PORT=3900"
+set "DATA_DIR=%CD%\demo-data"
+set "DB_PATH=%DATA_DIR%\coffeecounter.sqlite"
 
-where docker >nul 2>nul
-if errorlevel 1 (
-    echo [ERROR] Docker was not found on PATH. Install Docker Desktop first:
-    echo         https://www.docker.com/products/docker-desktop/
-    pause
-    exit /b 1
+rem Optional first argument: "demo.bat reset" wipes the demo data first,
+rem "demo.bat <port>" runs on another port (default 3900).
+if /I "%1"=="reset" (
+    echo Resetting demo data ("%DATA_DIR%") ...
+    if exist "%DATA_DIR%" rmdir /s /q "%DATA_DIR%"
+) else (
+    if not "%1"=="" set "PORT=%1"
 )
 
-if /I "%1"=="stop" goto :stop
-if /I "%1"=="reset" goto :reset
-goto :start
+echo ==========================================================
+echo    CoffeeCounter - demo server (local, no Docker needed)
+echo.
+echo    URL:   http://localhost:%PORT%
+echo    PINs:  Admin =^> 1111   (Demo Admin)
+echo           User  =^> 2222   (Mira)
+echo           User  =^> 3333   (Jonas)
+echo.
+echo    Fresh demo:  demo.bat reset
+echo    Stop:        Ctrl+C in this window (data stays on disk)
+echo ==========================================================
+echo.
 
-:stop
-echo Stopping and removing %CONTAINER_NAME% ...
-docker rm -f %CONTAINER_NAME% >nul 2>nul
-echo Done. Demo data on disk was kept at "%APPDATA_DIR%".
+REM --- Find Python (python or py -3) ---
+set "PY=python"
+where python >nul 2>nul
+if errorlevel 1 set "PY=py -3"
+
+REM --- Create / update the Python environment ---
+if not exist "%VENV_DIR%\Scripts\python.exe" (
+    echo [1/3] Creating Python environment "%VENV_DIR%" ...
+    %PY% -m venv "%VENV_DIR%" || goto :err
+    echo [2/3] Installing dependencies ...
+    "%VENV_DIR%\Scripts\python.exe" -m pip install --upgrade pip >nul
+    "%VENV_DIR%\Scripts\python.exe" -m pip install -r requirements.txt || goto :err
+) else (
+    echo [1/3] Python environment "%VENV_DIR%" present.
+    echo [2/3] Checking dependencies ...
+    "%VENV_DIR%\Scripts\python.exe" -c "import fastapi, webauthn, itsdangerous, uvicorn" 2>nul || (
+        echo       - installing requirements.txt ...
+        "%VENV_DIR%\Scripts\python.exe" -m pip install -r requirements.txt || goto :err
+    )
+)
+
+if not exist "%DATA_DIR%" mkdir "%DATA_DIR%"
+
+REM --- Env for the demo instance (data lives in .\demo-data, separate
+REM      from any real deployment, so nothing can collide) ---
+set "APP_DATA_PATH=%DATA_DIR%"
+set "DB_PATH=%DB_PATH%"
+set "BASE_URL=http://localhost:%PORT%/"
+set "COFFEECOUNTER_AUTH_MODE=both"
+set "COFFEECOUNTER_PIN_LENGTH=4"
+set "SESSION_TIMEOUT=28800"
+set "TRUST_PROXY=false"
+set "USE_CF_CONNECTING_IP=false"
+
+echo [3/3] Seeding demo data (skipped automatically if already there) ...
+"%VENV_DIR%\Scripts\python.exe" scripts\seed_demo.py || goto :err
+
+echo.
+echo Starting the demo server ... the browser opens in a few seconds.
+rem ping = reliable delay without console input (timeout.exe would complain otherwise)
+start "" /b cmd /c "ping -n 4 127.0.0.1 >nul & start http://localhost:%PORT%"
+
+"%VENV_DIR%\Scripts\python.exe" -m uvicorn app.main:app --host 127.0.0.1 --port %PORT%
 goto :eof
 
-:reset
-echo Removing existing demo container and data for a clean run ...
-docker rm -f %CONTAINER_NAME% >nul 2>nul
-if exist "%APPDATA_DIR%" rmdir /s /q "%APPDATA_DIR%"
-goto :start
-
-:start
-if not exist "%APPDATA_DIR%" mkdir "%APPDATA_DIR%"
-
-echo Building the demo image (first run only takes a bit longer) ...
-docker build -t %IMAGE_NAME% "%~dp0."
-if errorlevel 1 (
-    echo [ERROR] Docker build failed. Scroll up for details.
-    pause
-    exit /b 1
-)
-
-docker inspect %CONTAINER_NAME% >nul 2>nul
-if not errorlevel 1 (
-    echo Found an existing demo container, starting it ...
-    docker start %CONTAINER_NAME% >nul
-) else (
-    echo Starting a fresh demo container on http://localhost:%HOST_PORT%/ ...
-    docker run -d ^
-        --name %CONTAINER_NAME% ^
-        -p %HOST_PORT%:3000 ^
-        -e TZ=Europe/Berlin ^
-        -e BASE_URL=http://localhost:%HOST_PORT%/ ^
-        -e APP_DATA_PATH=/app/config ^
-        -e DB_PATH=/app/config/coffeecounter.sqlite ^
-        -e COFFEECOUNTER_AUTH_MODE=both ^
-        -e COFFEECOUNTER_PIN_LENGTH=4 ^
-        -e TRUST_PROXY=false ^
-        -v "%APPDATA_DIR%:/app/config" ^
-        %IMAGE_NAME% >nul
-    if errorlevel 1 (
-        echo [ERROR] Could not start the container. Is port %HOST_PORT% already in use?
-        pause
-        exit /b 1
-    )
-)
-
-echo Waiting for the app to come up ...
-set READY=0
-for /L %%i in (1,1,20) do (
-    curl -s -o nul -w "%%{http_code}" http://localhost:%HOST_PORT%/api/health > "%TEMP%\cc_health.txt" 2>nul
-    set /p HEALTH=<"%TEMP%\cc_health.txt"
-    if "!HEALTH!"=="200" (
-        set READY=1
-        goto :ready
-    )
-    timeout /t 1 /nobreak >nul
-)
-:ready
-if "!READY!"=="0" (
-    echo [WARN] App did not respond in time — check "docker logs %CONTAINER_NAME%".
-) else (
-    echo App is up.
-)
-
-echo Seeding demo data (skipped automatically if it's already there) ...
-docker exec %CONTAINER_NAME% python scripts/seed_demo.py
-
+:err
 echo.
-echo ================================================
-echo  CoffeeCounter demo is running:
-echo    http://localhost:%HOST_PORT%/
-echo.
-echo  Demo PINs (also printed above on first seed):
-echo    Admin -^> 1111   (Demo Admin)
-echo    User  -^> 2222   (Mira)
-echo    User  -^> 3333   (Jonas)
-echo.
-echo  Run "demo.bat reset" for a completely fresh demo,
-echo  or "demo.bat stop" to shut it down.
-echo ================================================
-echo.
-
-start "" http://localhost:%HOST_PORT%/
-
+echo  ERROR - check the message above.
 pause
