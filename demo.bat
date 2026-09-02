@@ -14,7 +14,7 @@ set "DB_PATH=%DATA_DIR%\coffeecounter.sqlite"
 rem Optional first argument: "demo.bat reset" wipes the demo data first,
 rem "demo.bat <port>" runs on another port (default 3900).
 if /I "%1"=="reset" (
-    echo Resetting demo data ("%DATA_DIR%") ...
+    echo Resetting demo data in "%DATA_DIR%" ...
     if exist "%DATA_DIR%" rmdir /s /q "%DATA_DIR%"
 ) else (
     if not "%1"=="" set "PORT=%1"
