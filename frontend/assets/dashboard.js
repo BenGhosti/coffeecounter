@@ -7,10 +7,6 @@ let currentScope = 'user';
 let lineChart = null;
 let pieChart = null;
 
-const canUseWebAuthn = window.isSecureContext === true &&
-    typeof navigator.credentials === 'object' &&
-    typeof navigator.credentials.create === 'function';
-
 function cssVar(name, fallback) {
     const v = getComputedStyle(document.documentElement).getPropertyValue(name).trim();
     return v || fallback;
@@ -74,11 +70,22 @@ function copyText(text) {
 async function boot() {
     ME = await requireAuth();
     document.getElementById('who').textContent = ME.name;
+    const whoBig = document.getElementById('who-big');
+    if (whoBig) whoBig.textContent = ME.name;
+
+    const adminLink = document.getElementById('admin-link');
+    const settingsLink = document.getElementById('settings-link');
     if (ME.role === 'admin') {
-        document.getElementById('admin-link').style.display = 'inline';
-        document.getElementById('admin-link').addEventListener('click', (e) => {
+        adminLink.style.display = 'inline';
+        adminLink.addEventListener('click', (e) => {
             e.preventDefault();
             window.location.href = '/admin.html';
+        });
+    } else {
+        settingsLink.style.display = 'inline';
+        settingsLink.addEventListener('click', (e) => {
+            e.preventDefault();
+            window.location.href = '/settings.html';
         });
     }
     document.getElementById('logout-link').addEventListener('click', async (e) => {
@@ -90,7 +97,6 @@ async function boot() {
     DRINKS = await api('/api/drinks');
     renderTriggerButtons();
     await loadWebhookLinks();
-    initPasskeys();
     await refreshAll();
 
     document.querySelectorAll('#range-switcher button').forEach(btn => {
@@ -153,8 +159,6 @@ function closeUndoConfirm() {
 }
 
 async function prepareUndo() {
-    const statusEl = document.getElementById('undo-status');
-    statusEl.textContent = '';
     try {
         const recent = await api('/api/events/recent?limit=1');
         if (recent.length === 0) {
@@ -235,91 +239,6 @@ async function loadWebhookLinks() {
         });
         container.appendChild(row);
     });
-}
-
-// ---- Passkeys: every user manages their own ----
-function initPasskeys() {
-    const warning = document.getElementById('secure-warning');
-    const addBtn = document.getElementById('add-passkey-btn');
-    if (!canUseWebAuthn) {
-        if (warning) warning.style.display = 'block';
-        addBtn.disabled = true;
-    } else {
-        addBtn.addEventListener('click', addPasskey);
-    }
-    loadPasskeys();
-}
-
-async function loadPasskeys() {
-    const body = document.getElementById('passkeys-body');
-    let keys;
-    try {
-        keys = await api(`/api/users/${ME.id}/passkeys`);
-    } catch (e) {
-        showToast(e.message || 'Could not load passkeys', 'error');
-        return;
-    }
-    body.innerHTML = '';
-    if (keys.length === 0) {
-        body.innerHTML = '<tr><td colspan="4" class="empty-message">No passkeys yet</td></tr>';
-        return;
-    }
-    keys.forEach(k => {
-        const tr = document.createElement('tr');
-        tr.innerHTML = `
-            <td>${esc(k.name)}</td>
-            <td>${fmtTime(k.created_at)}</td>
-            <td>${k.last_used_at ? fmtTime(k.last_used_at) : 'never'}</td>
-            <td><button class="danger-outline" data-id="${k.id}" data-name="${esc(k.name)}">Remove</button></td>`;
-        body.appendChild(tr);
-    });
-    body.querySelectorAll('button[data-id]').forEach(btn => {
-        btn.addEventListener('click', async () => {
-            if (!confirm(`Remove passkey "${btn.dataset.name}"?`)) return;
-            try {
-                await api(`/api/users/${ME.id}/passkeys/${btn.dataset.id}`, { method: 'DELETE' });
-                showToast('Passkey removed', 'success');
-                await loadPasskeys();
-            } catch (e) {
-                showToast(e.message || 'Could not remove passkey', 'error');
-            }
-        });
-    });
-}
-
-async function addPasskey() {
-    if (!canUseWebAuthn) {
-        showToast('Passkeys need HTTPS or localhost', 'error');
-        return;
-    }
-    const name = document.getElementById('passkey-name').value.trim();
-    if (!name) {
-        showToast('Please name this passkey', 'error');
-        return;
-    }
-    const addBtn = document.getElementById('add-passkey-btn');
-    addBtn.disabled = true;
-    try {
-        const { challengeId, options } = await api(`/api/users/${ME.id}/passkeys/register-options`, {
-            method: 'POST', body: JSON.stringify({}),
-        });
-        const credential = await navigator.credentials.create({ publicKey: toRegistrationOptions(options) });
-        await api(`/api/users/${ME.id}/passkeys/register-verify`, {
-            method: 'POST',
-            body: JSON.stringify({ challengeId, response: registrationToJSON(credential), name }),
-        });
-        document.getElementById('passkey-name').value = '';
-        showToast(`Passkey "${name}" added`, 'success');
-        await loadPasskeys();
-    } catch (e) {
-        if (e.name === 'NotAllowedError') {
-            showToast('Registration cancelled', 'info');
-        } else {
-            showToast(e.message || 'Registration failed', 'error');
-        }
-    } finally {
-        addBtn.disabled = !canUseWebAuthn;
-    }
 }
 
 async function refreshAll() {

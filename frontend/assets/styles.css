@@ -116,6 +116,24 @@ h1 {
     text-align: center;
 }
 
+.page-greeting {
+    text-align: center;
+    padding: 4px 0 18px;
+}
+.page-greeting span {
+    display: inline-block;
+    font-size: 1.75rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    color: var(--text-color);
+    opacity: 0.88;
+    line-height: 1.2;
+    background: linear-gradient(180deg, var(--text-color), var(--highlight-color));
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
 .site-footer {
     margin-top: auto;
     padding: 16px 0 8px;
@@ -190,6 +208,33 @@ input, select {
     font-size: 0.95rem;
 }
 
+/* ---------- Consistent sizing / baseline grid ----------
+   Primary controls (buttons + fields) share one height so controls that
+   sit on the same row align flush. Compact controls in tight toolbars and
+   tables keep their smaller, internally consistent size. */
+button,
+input,
+select {
+    min-height: 44px;
+}
+
+.range-switcher button,
+.segmented button,
+.chart-toolbar #export-btn {
+    min-height: 36px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+}
+
+.webhook-link button,
+.danger-outline,
+.undo-confirm button,
+.theme-toggle {
+    min-height: 0;
+}
+
 /* ---------- PIN entry (login) ---------- */
 .pin-container {
     display: flex;
@@ -262,6 +307,23 @@ input, select {
 .card h2 {
     font-size: 1.15rem;
     margin-bottom: 1rem;
+}
+
+/* Card header row: title left, action(s) right — same height, one flush
+   line (e.g. "Undo last" next to "Log a drink"). */
+.card-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-bottom: 1rem;
+}
+.card-head h2 {
+    margin: 0;
+}
+.card-head button {
+    white-space: nowrap;
 }
 
 /* ---------- Top nav ---------- */

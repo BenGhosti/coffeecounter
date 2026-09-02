@@ -10,8 +10,8 @@
             document.documentElement.setAttribute('data-theme', t);
         })();
     </script>
-    <title>CoffeeCounter - Admin</title>
-    <meta name="description" content="CoffeeCounter admin: manage users, drink types and passkeys.">
+    <title>CoffeeCounter - Settings</title>
+    <meta name="description" content="CoffeeCounter settings: manage your passkeys.">
     <meta name="color-scheme" content="light dark">
     <meta name="theme-color" media="(prefers-color-scheme: light)" content="#F4EFE8">
     <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#171310">
@@ -19,8 +19,8 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-title" content="CoffeeCounter">
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23D89A52' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M17 8h1a4 4 0 1 1 0 8h-1'/%3E%3Cpath d='M3 8h14v9a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4V8z'/%3E%3Cline x1='6' y1='1' x2='6' y2='4'/%3E%3Cline x1='10' y1='1' x2='10' y2='4'/%3E%3Cline x1='14' y1='1' x2='14' y2='4'/%3E%3C/svg%3E">
-    <meta property="og:title" content="CoffeeCounter - Admin">
-    <meta property="og:description" content="CoffeeCounter admin: manage users, drink types and passkeys.">
+    <meta property="og:title" content="CoffeeCounter - Settings">
+    <meta property="og:description" content="CoffeeCounter settings: manage your passkeys.">
     <meta property="og:type" content="website">
     <link rel="stylesheet" href="assets/styles.css">
     <script src="assets/webauthn.js"></script>
@@ -36,9 +36,10 @@
                     <line x1="10" y1="1" x2="10" y2="4"/>
                     <line x1="14" y1="1" x2="14" y2="4"/>
                 </svg>
-                CoffeeCounter Admin
+                Settings
             </div>
             <div class="nav-actions">
+                <span id="who" style="opacity:0.7; font-size:0.85rem; margin-right:8px;"></span>
                 <a href="/dashboard.html">&larr; Dashboard</a>
                 <a href="#" id="logout-link">Sign out</a>
                 <button class="theme-toggle" id="theme-toggle" aria-label="Toggle theme" style="position:static;">
@@ -60,58 +61,15 @@
             </div>
         </div>
 
-        <!-- Users -->
+        <!-- Passkeys: self-service for your own account -->
         <div class="card">
-            <h2>Users</h2>
-            <div class="form-row">
-                <div class="field">
-                    <label for="new-user-name">Name</label>
-                    <input type="text" id="new-user-name" placeholder="e.g. Mira" maxlength="50">
-                </div>
-                <div class="field">
-                    <label for="new-user-pin" id="new-user-pin-label">PIN</label>
-                    <input type="password" inputmode="numeric" id="new-user-pin" placeholder="••••" maxlength="10">
-                </div>
-                <div class="field">
-                    <label for="new-user-role">Role</label>
-                    <select id="new-user-role">
-                        <option value="user">User</option>
-                        <option value="admin">Admin</option>
-                    </select>
-                </div>
+            <div class="card-head">
+                <h2>Your passkeys</h2>
             </div>
-            <button id="add-user-btn">Add user</button>
-            <div class="status-message" id="user-status"></div>
-            <table style="margin-top:1rem;">
-                <thead><tr><th>Name</th><th>Role</th><th>Passkeys</th><th>Created</th><th></th></tr></thead>
-                <tbody id="users-body"></tbody>
-            </table>
-        </div>
-
-        <!-- Drink types -->
-        <div class="card">
-            <h2>Drink types</h2>
-            <div class="form-row">
-                <div class="field">
-                    <label for="new-drink-name">Name</label>
-                    <input type="text" id="new-drink-name" placeholder="e.g. Tea" maxlength="40">
-                </div>
-                <div class="field">
-                    <label for="new-drink-color">Chart color</label>
-                    <input type="color" id="new-drink-color" value="#D89A52" style="height:44px; padding:4px;">
-                </div>
-            </div>
-            <button id="add-drink-btn">Add drink type</button>
-            <div class="status-message" id="drink-status"></div>
-            <table style="margin-top:1rem;">
-                <thead><tr><th>Color</th><th>Name</th><th>Status</th><th></th></tr></thead>
-                <tbody id="drinks-body"></tbody>
-            </table>
-        </div>
-
-        <!-- Your passkeys -->
-        <div class="card">
-            <h2>Your passkeys</h2>
+            <p style="opacity:0.75; font-size:0.9rem; margin-bottom:1rem;">
+                Passkeys let you sign in without typing your PIN. They are tied to
+                this account, so signing in with one always opens your dashboard.
+            </p>
             <div class="secure-warning" id="secure-warning">
                 <strong>Passkeys aren't available in this browser context.</strong><br>
                 Passkeys/WebAuthn only work over HTTPS or on localhost. PIN login is unaffected.
@@ -121,8 +79,10 @@
                     <label for="passkey-name">Key name</label>
                     <input type="text" id="passkey-name" placeholder="e.g. Office laptop" maxlength="50">
                 </div>
+                <div style="display:flex; align-items:flex-end;">
+                    <button id="add-passkey-btn" type="button">Add passkey</button>
+                </div>
             </div>
-            <button id="add-passkey-btn">Add passkey</button>
             <div class="status-message" id="passkey-status"></div>
             <table style="margin-top:1rem;">
                 <thead><tr><th>Name</th><th>Created</th><th>Last used</th><th></th></tr></thead>
@@ -134,6 +94,6 @@
     <div class="site-footer">CoffeeCounter · Made by BenGhosti</div>
 
     <script src="assets/app.js"></script>
-    <script src="assets/admin.js"></script>
+    <script src="assets/settings.js"></script>
 </body>
 </html>

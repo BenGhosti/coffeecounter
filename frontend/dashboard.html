@@ -24,7 +24,6 @@
     <meta property="og:type" content="website">
     <link rel="stylesheet" href="assets/styles.css">
     <script src="assets/vendor/chart.umd.min.js"></script>
-    <script src="assets/webauthn.js"></script>
 </head>
 <body>
     <div class="container wide">
@@ -42,6 +41,7 @@
             <div class="nav-actions">
                 <span id="who" style="opacity:0.7; font-size:0.85rem; margin-right:8px;"></span>
                 <a href="#" id="admin-link" style="display:none;">Admin</a>
+                <a href="#" id="settings-link" style="display:none;">Settings</a>
                 <a href="#" id="logout-link">Sign out</a>
                 <button class="theme-toggle" id="theme-toggle" aria-label="Toggle theme" style="position:static;">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -62,14 +62,19 @@
             </div>
         </div>
 
+        <!-- Greeting: the signed-in user's name, centered and slightly
+             larger than the card titles, but still subtle. -->
+        <div class="page-greeting" aria-hidden="true">
+            <span id="who-big"></span>
+        </div>
+
         <!-- My Stats: trigger + undo -->
         <div class="card">
-            <h2>Log a drink</h2>
-            <div class="trigger-grid" id="trigger-grid"></div>
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-top:12px;">
+            <div class="card-head">
+                <h2>Log a drink</h2>
                 <button class="secondary" id="undo-btn">Undo last</button>
-                <span id="undo-status" style="font-size:0.8rem; opacity:0.7;"></span>
             </div>
+            <div class="trigger-grid" id="trigger-grid"></div>
             <div class="undo-confirm" id="undo-confirm" role="dialog" aria-live="polite"></div>
         </div>
 
@@ -138,27 +143,6 @@
             <div class="status-message" id="webhook-status"></div>
         </div>
 
-        <!-- Your passkeys (self-service for every user) -->
-        <div class="card">
-            <h2>Your passkeys</h2>
-            <div class="secure-warning" id="secure-warning">
-                <strong>Passkeys aren't available in this browser context.</strong><br>
-                Passkeys/WebAuthn only work over HTTPS or on localhost. PIN login is unaffected.
-            </div>
-            <div class="form-row">
-                <div class="field">
-                    <label for="passkey-name">Key name</label>
-                    <input type="text" id="passkey-name" placeholder="e.g. Office laptop" maxlength="50">
-                </div>
-            </div>
-            <button id="add-passkey-btn">Add passkey</button>
-            <div class="status-message" id="passkey-status"></div>
-            <table style="margin-top:1rem;">
-                <thead><tr><th>Name</th><th>Created</th><th>Last used</th><th></th></tr></thead>
-                <tbody id="passkeys-body"></tbody>
-            </table>
-        </div>
-
         <div class="card">
             <h2>Recent activity</h2>
             <table>
@@ -168,7 +152,7 @@
         </div>
     </div>
 
-    <div class="site-footer">CoffeeCounter · self-hosted</div>
+    <div class="site-footer">CoffeeCounter · Made by BenGhosti</div>
 
     <script src="assets/app.js"></script>
     <script src="assets/dashboard.js"></script>
