@@ -4,12 +4,16 @@ services:
     # image: ghcr.io/yourname/coffeecounter:latest   # once you push a built image
     container_name: coffeecounter
     restart: unless-stopped
+    user: "99:100"
+    security_opt: ["no-new-privileges:true"]
+    cap_drop: ["ALL"]
     ports:
-      - "3800:3000"
+      - "7889:3000"
     volumes:
       - ${APP_DATA_PATH:-/mnt/user/appdata/coffeecounter}:/app/config
     environment:
       TZ: ${TZ:-Europe/Berlin}
+      HOME: /tmp
       PORT: 3000
       APP_DATA_PATH: /app/config
       DB_PATH: /app/config/coffeecounter.sqlite
